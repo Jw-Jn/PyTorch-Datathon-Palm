@@ -98,9 +98,9 @@ class DataLoader():
         if self.mode == 'train':
             img_original = self.augment_data(img_original)
             r = random.randint(-2, 2)
-            img_original = transforms.functional.rotate(img_original, 90*r)
+            img_original = transforms.functional.rotate(img_original, 90 * r)
 
-        # resize img to 388 and add padding; label resize to 128
+        # resize img to 224 to fit into Resnet50
         resized_size = 224
         img_original = transforms.functional.resize(img_original, [resized_size, resized_size])
 
