@@ -12,9 +12,13 @@ class ResNet(nn.Module):
         modules = list(ResNet50.children())[:-1]
         
         self.backbone = nn.Sequential(*modules)
-        self.fc1 = nn.Linear(2048, 32)
-        # self.dropout = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(32, 1)
+        self.fc1 = nn.Linear(2048, 512)
+        self.dropout1 = nn.Dropout(p=0.5)
+
+        self.fc2 = nn.Linear(512, 32)
+        self.dropout2 = nn.Dropout(p=0.5)
+
+        self.fc3 = nn.Linear(32, 1)
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
@@ -25,8 +29,10 @@ class ResNet(nn.Module):
         # print('view', out.shape)
         out = self.fc1(out)
         # print('fc1',out.shape)
-        # out = self.dropout(out)
+        out = self.dropout1(out)
         out = self.fc2(out)
+        out = self.dropout2(out)
+        out = self.fc3(out)
         # print('fc2',out.shape)
         out = self.sigmoid(out)
 

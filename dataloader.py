@@ -30,7 +30,11 @@ class DataLoader():
             temp = df[df['has_oilpalm']==0]
             self.no_palm_labels = temp[temp['score']>0.75]
 
-            self.get_random_no_palm()
+            print(len(self.has_palm_labels), len(self.no_palm_labels))
+
+            self.get_no_palm()
+
+            # self.get_random_no_palm()
 
     def __len__(self):
         '''
@@ -62,14 +66,18 @@ class DataLoader():
         return methods(img_original)
 
 
-    def get_random_no_palm(self):
-        length = len(self.has_palm_labels)
-        idx = random.sample(list(range(length)), length)
-        no_palm = []
-        dict = self.no_palm_labels.to_dict('records')
-        for i in idx:
-            no_palm.append(dict[i])
-        # print(no_palm)
+    # def get_no_palm(self):
+    #     length = len(self.has_palm_labels)
+    #     idx = random.sample(list(range(length)), length)
+    #     no_palm = []
+    #     dict = self.no_palm_labels.to_dict('records')
+    #     for i in idx:
+    #         no_palm.append(dict[i])
+    #     # print(no_palm)
+    #     self.label = self.has_palm_labels.to_dict('records')+no_palm
+
+    def get_no_palm(self):
+        no_palm = self.no_palm_labels.to_dict('records')
         self.label = self.has_palm_labels.to_dict('records')+no_palm
 
     def __getitem__(self, idx):
@@ -98,9 +106,9 @@ class DataLoader():
         if self.mode == 'train':
             img_original = self.augment_data(img_original)
             r = random.randint(-2, 2)
-            img_original = transforms.functional.rotate(img_original, 90 * r)
+            img_original = transforms.functional.rotate(img_original, 90*r)
 
-        # resize img to 224 to fit into Resnet50
+        # resize img to 388 and add padding; label resize to 128
         resized_size = 224
         img_original = transforms.functional.resize(img_original, [resized_size, resized_size])
 

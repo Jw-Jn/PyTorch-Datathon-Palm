@@ -26,7 +26,7 @@ def train_net(net, epochs=5, lr=0.001, data_root='data/', save_cp=True, gpu=True
     train_loader = DataLoader(data_root, 'train')
     train_loader.setMode('train')
     train_data_loader = torch.utils.data.DataLoader(train_loader,
-                                                    batch_size=8,
+                                                    batch_size=16,
                                                     shuffle=True,
                                                     num_workers=num_workers)
 
@@ -61,7 +61,25 @@ def train_net(net, epochs=5, lr=0.001, data_root='data/', save_cp=True, gpu=True
             pred_torch = net(input_torch)
             
             # todo: get prediction and getLoss()
-            loss = criterion(pred_torch, label_torch)
+            gt_label = label_torch.detach().cpu()
+            pred = pred_torch.detach().cpu()
+            pred_copy = pred.clone()
+
+            pos_flag = gt_label > 0
+
+            pred_copy[pos_flag] = -1
+            _, indices = pred_copy.sort(dim=1, descending=True)
+            _, orders = indices.sort(dim=1)
+
+            num_pos = pos_flag.sum()
+            num_neg = 2.0*num_pos
+            neg_flag = orders<num_neg
+
+            self_flag = neg_flag.squeeze()|pos_flag
+
+            # print(pred_torch.size(), label_torch.size(), self_flag.size())
+
+            loss = criterion(pred_torch[self_flag], label_torch[self_flag])
 
             # optimize weights
             loss.backward()
@@ -73,7 +91,7 @@ def train_net(net, epochs=5, lr=0.001, data_root='data/', save_cp=True, gpu=True
 
             # save trained image at end of epoch
             # for i in range(8):
-            print(img_name[0], pred_torch[0].detach().cpu(), label[0])
+            # print(img_name[0], pred_torch[0].detach().cpu(), label[0])
 
         
         # save model when necessary

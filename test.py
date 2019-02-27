@@ -15,6 +15,8 @@ from common import show_pred_image, save_pred_image
 
 def test_net(net, model='CP20.pth', data_root='data/', gpu=True):
 
+    threshold = 0.01
+
     if gpu:
         num_workers = 0
     else:
@@ -48,9 +50,15 @@ def test_net(net, model='CP20.pth', data_root='data/', gpu=True):
 
             # run net
             pred_torch = net(input_torch)
+            pre = pred_torch[0].detach().cpu().numpy()[0]
+            if pre<threshold:
+                pre = 0.0
+
+            if pre>0.98:
+                pre = 1.0
 
             # save result
-            results.append([img_name[0], pred_torch[0].detach().cpu().numpy()[0]])
+            results.append([img_name[0], pre])
 
     with open('result.csv', mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -59,7 +67,7 @@ def test_net(net, model='CP20.pth', data_root='data/', gpu=True):
     
 def get_args():
     parser = OptionParser()
-    parser.add_option('-m', '--model', dest='model', default='epoch10.pth', help='output directory')
+    parser.add_option('-m', '--model', dest='model', default='epoch100.pth', help='output directory')
     parser.add_option('-g', '--gpu', action='store_true', dest='gpu', default=False, help='use cuda')
 
     (options, _) = parser.parse_args()
